@@ -9,4 +9,7 @@
     <typeAliases>
         <package name="com.smm.crud.bean"/>
     </typeAliases>
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+    </plugins>
 </configuration>

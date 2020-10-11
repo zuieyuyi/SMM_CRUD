@@ -19,9 +19,11 @@
 
     <!-- 配置视图解析器 -->
     <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <property name="suffix" value="/WEB-INF/views/"/>
-        <property name="prefix" value=".jsp"/>
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
     </bean>
+
+    <mvc:resources location="/static/" mapping="/static/**" />
 
     <!-- 标准配置 -->
     <!-- 将springmvc不能处理的请求交给tommcat -->
