@@ -69,38 +69,7 @@
         </div>
         <!-- 分页条信息 -->
         <div class="col-md-6" id="page_nav_area">
-<%--            <nav aria-label="Page navigation">--%>
-<%--                <ul class="pagination">--%>
-<%--                    <li><a href="${APP_PATH}/emps?pn=1">首页</a></li>--%>
-<%--                    <!-- 如果没有上一页则不显示 -->--%>
-<%--                    <c:if test="${pageInfo.hasPreviousPage}">--%>
-<%--                        <li >--%>
-<%--                            <a href="${APP_PATH}/emps?pn=${pageInfo.pageNum-1}" aria-label="Previous">--%>
-<%--                                <span aria-hidden="true">&laquo;</span>--%>
-<%--                            </a>--%>
-<%--                        </li>--%>
-<%--                    </c:if>--%>
 
-<%--                    <c:forEach items="${pageInfo.navigatepageNums}" var="page_Num">--%>
-<%--                        <!-- 如果page_Num等于当前页码则高亮即： class="active" -->--%>
-<%--                        <c:if test="${page_Num == pageInfo.pageNum}">--%>
-<%--                            <li class="active"><a href="${APP_PATH}/emps?pn=${page_Num}">${page_Num}</a></li>--%>
-<%--                        </c:if>--%>
-<%--                        <c:if test="${page_Num != pageInfo.pageNum}">--%>
-<%--                            <li><a href="${APP_PATH}/emps?pn=${page_Num}">${page_Num}</a></li>--%>
-<%--                        </c:if>--%>
-<%--                    </c:forEach>--%>
-<%--                    <!-- 如果没有下一页则不显示 -->--%>
-<%--                    <c:if test="${pageInfo.hasNextPage}">--%>
-<%--                        <li>--%>
-<%--                            <a href="${APP_PATH}/emps?pn=${pageInfo.pageNum+1}" aria-label="Previous">--%>
-<%--                                <span aria-hidden="true">&raquo;</span>--%>
-<%--                            </a>--%>
-<%--                        </li>--%>
-<%--                    </c:if>--%>
-<%--                    <li><a href="${APP_PATH}/emps?pn=${pageInfo.pages}">末页</a></li>--%>
-<%--                </ul>--%>
-<%--            </nav>--%>
         </div>
     </div>
 </div>
