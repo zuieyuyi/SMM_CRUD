@@ -58,37 +58,17 @@
                 </thead>
                 <tbody>
                 </tbody>
-<%--                <c:forEach items="${pageInfo.list}" var="emp">--%>
-<%--                    <tr>--%>
-<%--                        <td>${emp.empId}</td>--%>
-<%--                        <td>${emp.empName}</td>--%>
-<%--                        <td>${emp.gender=="M"?"男":"女"}</td>--%>
-<%--                        <td>${emp.email}</td>--%>
-<%--                        <td>${emp.department.deptName}</td>--%>
-<%--                        <td>--%>
-<%--                            <button class="btn btn-primary btn-sm">--%>
-<%--                                <!-- 按钮中图标 -->--%>
-<%--                                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>--%>
-<%--                                编辑--%>
-<%--                            </button>--%>
-<%--                            <button class="btn btn-danger btn-sm">--%>
-<%--                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>--%>
-<%--                                删除--%>
-<%--                            </button>--%>
-<%--                        </td>--%>
-<%--                    </tr>--%>
-<%--                </c:forEach>--%>
             </table>
         </div>
     </div>
     <!-- 显示分页栏 -->
     <div class="row">
         <!-- 分页信息 -->
-        <div class="col-md-6">
-            当前第 页，总共 页,总共 条记录
+        <div class="col-md-6" id="page_info_area">
+
         </div>
         <!-- 分页条信息 -->
-        <div class="col-md-6">
+        <div class="col-md-6" id="page_nav_area">
 <%--            <nav aria-label="Page navigation">--%>
 <%--                <ul class="pagination">--%>
 <%--                    <li><a href="${APP_PATH}/emps?pn=1">首页</a></li>--%>
@@ -127,20 +107,32 @@
 <script>
     //1、页面加载完成以后，直接去发送ajax请求，要到分页数据
     $(function(){
+        //去首页
+        to_page(1);
+    });
+
+    //发送ajax请求获取那一页数据
+    function to_page(pn) {
         $.ajax({
             url:"${APP_PATH}/emps",
-            data:"pn=1",
+            data:"pn="+pn,
             type:"GET",
             success:function (result) {
                 // console.log(result);
                 //1、解析并显示员工数据
                 build_emps_table(result);
                 //2、解析并显示分页数据
+                build_page_info(result);
+                //3、解析并显示分页条数据
+                build_page_nav(result);
             }
         });
-    });
+    }
 
     function build_emps_table(result){
+        //清空数据
+        $("#emps_table tbody").empty();
+
         var emps = result.map.pageInfo.list;
         $.each(emps,function(index,item){
             var empIdTd = $("<td></td>").append(item.empId);
@@ -161,8 +153,80 @@
                                 .appendTo("#emps_table tbody");
         });
     }
-    function build_page_nav(){
+    //解析分页条数据
+    function build_page_info(result){
+        //清空数据
+        $("#page_info_area").empty();
+        // 当前第 页，总共 页,总共 条记录
+        $("#page_info_area").append("当前第"+result.map.pageInfo.pageNum+
+                                    "页，总共"+result.map.pageInfo.pages+
+                                    "页,总共"+result.map.pageInfo.total+"条记录");
+    }
+    //解析分页信息数据
+    function build_page_nav(result){
+        //清空数据
+        $("#page_nav_area").empty();
+        //列表父元素
+        var ulTag = $("<ul></ul>").addClass("pagination");
+        //首页
+        var firstPage = $("<li></li>").append($("<a></a>").append("首页"));
 
+        //末页
+        var lastPage = $("<li></li>").append($("<a></a>").append("末页"));
+
+        //上一页
+        var prePage = $("<li></li>").append($("<a></a>").append($("<span></span>").append("&laquo;").attr("aria-hidden","true")));
+
+        if(result.map.pageInfo.hasPreviousPage == false){
+            prePage.addClass("disabled");
+        }else{
+            //点击翻页
+            prePage.click(function(){
+                to_page(result.map.pageInfo.pageNum-1)
+            });
+            //点击回首页
+            firstPage.click(function(){
+                to_page(1);
+            });
+        }
+
+        //下一页
+        var nextPage = $("<li></li>").append($("<a></a>").append($("<span></span>").append("&raquo;").attr("aria-hidden","true")));
+
+        if(result.map.pageInfo.hasNextPage == false){
+            nextPage.addClass("disabled");
+        }else{
+            //点击翻页
+            nextPage.click(function(){
+                to_page(result.map.pageInfo.pageNum+1)
+            });
+            //点击回末页
+            lastPage.click(function(){
+                to_page(result.map.pageInfo.pages);
+            });
+        }
+
+        ulTag.append(firstPage).append(prePage);
+
+        //中间页
+        $.each(result.map.pageInfo.navigatepageNums,function(index,item){
+            var numPage = $("<li></li>").append($("<a></a>").append(item));
+            if(result.map.pageInfo.pageNum == item){
+                numPage.addClass("active");
+            }else{
+                //点击发送ajax请求获取数据
+                numPage.click(function(){
+                    to_page(item);
+                });
+            }
+            ulTag.append(numPage);
+        })
+
+        ulTag.append(nextPage).append(lastPage);
+
+        var navTag = $("<nav></nav>").attr("aria-label","Page navigation");
+
+        navTag.append(ulTag).appendTo("#page_nav_area");
     }
 </script>
 </body>
