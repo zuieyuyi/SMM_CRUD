@@ -42,6 +42,7 @@
                         <label for="empName_add_input" class="col-sm-2 control-label">empName</label>
                         <div class="col-sm-10">
                             <input type="text" name="empName" class="form-control" id="empName_add_input" placeholder="empName">
+                            <span class="help-block"></span>
                         </div>
                     </div>
                     <!-- 员工邮箱 -->
@@ -49,6 +50,7 @@
                         <label for="email_add_input" class="col-sm-2 control-label">email</label>
                         <div class="col-sm-10">
                             <input type="text" name="email" class="form-control" id="email_add_input" placeholder="email@qq.com">
+                            <span class="help-block"></span>
                         </div>
                     </div>
                     <!-- 员工性别 -->
@@ -77,7 +79,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" id="emp_save_close_btn" data-dismiss="modal">关闭</button>
                 <button type="button" class="btn btn-primary" id="emp_save_btn">保存</button>
             </div>
         </div>
@@ -259,8 +261,22 @@
         navTag.append(ulTag).appendTo("#page_nav_area");
     }
 
-    //模态框绑定按钮事件
+    //清空表单内容遗迹样式
+    function clear_form(ele){
+        //清空表单内容
+        // reset是dom对象的方法
+        $(ele)[0].reset();
+        //清空表单样式
+        $(ele).find("*").removeClass("has-error has-success");
+        //清空提示信息
+        $(ele).find(".help-block").text("");
+    }
+
+    //点击按钮显示模态框
     $("#emp_and_model_btn").click(function(){
+        //清空表单数据（表单重置(清空内容及样式)）
+        clear_form("#empAddModel form");
+        // $("#empAddModel form")[0].reset();
         //发送ajax请求,查出部门，显示再下拉列表中
         getDepts();
         //弹出模态框
@@ -285,24 +301,114 @@
         })
     }
 
+    //校验表单数据
+    function validate_add_form(){
+        //1、拿到校验的数据，使用正则表达式校验
+        //姓名校验
+        var empName = $("#empName_add_input").val();
+        var regName = /(^[a-zA-Z0-9_-]{6,16}$)|(^[\u2E80-\u9FFF]{2,5})/;
+        if(!regName.test(empName)){
+            // alert("用户名可以是2-5位中文或者是6-16位字母数字组合");
+            //都要清空样式
+            show_validate("#empName_add_input","error","用户名必须是2-5位中文或者是6-16位字母数字组合");
+            // $("#empName_add_input").parent().addClass("has-error");
+            // $("#empName_add_input").next("span").text("用户名可以是2-5位中文或者是6-16位字母数字组合");
+            return false;
+        }else{
+            show_validate("#empName_add_input","success","");
+            // $("#empName_add_input").parent().addClass("has-success");
+            // $("#empName_add_input").next("span").text();
+        }
+
+        //邮箱校验
+        var email = $("#email_add_input").val();
+        var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/
+        if(!regEmail.test(email)){
+            // alert("邮箱格式不正确");
+            show_validate("#email_add_input","error","邮箱格式不正确");
+            // $("#email_add_input").parent().addClass("has-error");
+            // $("#email_add_input").next("span").text("邮箱格式不正确");
+            return false;
+        }else{
+            show_validate("#email_add_input","success","");
+            // $("#email_add_input").parent().addClass("has-success");
+            // $("#email_add_input").next("span").text("");
+        }
+        return true;
+    }
+
+    //添加校验样式
+    function show_validate(ele,status,msg){
+        //清空样式
+        $(ele).parent().removeClass("has-success has-error");
+        if("success" == status){
+            $(ele).parent().addClass("has-success");
+            $(ele).next("span").text(msg);
+        }else if("error" == status){
+            $(ele).parent().addClass("has-error");
+            $(ele).next("span").text(msg);
+        }
+    }
+
+    //ajax员工名查重，输入框值变化触发
+    $("#empName_add_input").change(function () {
+        //1、获取输入名
+        var empName = this.value
+        //2、发送ajax请求查询数据库中是否存在名字一样的员工
+        $.ajax({
+            url: "${APP_PATH}/checkemp",
+            type: "POST",
+            data: "empName="+empName,
+            success:function(result){
+                if(result.code == 100){
+                    show_validate("#empName_add_input","success","用户名可用");
+                    $("#emp_save_btn").attr("ajax-va","success");
+                }else{
+                    show_validate("#empName_add_input","error",result.map.va_msg);
+                    $("#emp_save_btn").attr("ajax-va","error");
+                }
+            }
+        })
+    });
+
+    //点击保存员工数据
     $("#emp_save_btn").click(function () {
         //1、模态框填写的表单数据提交给服务器进行保存
-        //2、发送ajax请求保存员工
+        //1、校验表单发送的数据
+        // if(!validate_add_form()){
+        //     return false;
+        // }
+        //2、判断之前的ajax员工名校验是否成功了
+        // if($(this).attr("ajax-va") == "error"){
+        //     show_validate("#empName_add_input","error","用户名不可用");
+        //     return false;
+        // }
+        //3、发送ajax请求保存员工
         // alert($("#empAddModel form").serialize());
         $.ajax({
             url:"${APP_PATH}/emp",
             method:"POST",
             data:$("#empAddModel form").serialize(),
             success:function(result){
-                //员工保存成功
-                //1、关闭模态框
-                $("#empAddModel").modal("hide");
-                //2、来到最后一页显示刚保存的数据
-                to_page(totalrecord);
+                if (result.code == 100){
+                    //员工保存成功
+                    //1、关闭模态框
+                    $("#empAddModel").modal("hide");
+                    //2、来到最后一页显示刚保存的数据
+                    to_page(totalrecord);
+                }else {
+                    // console.log(result);
+                    //如果是未定义就表示没有错误，反之则有错
+                    if(undefined != result.map.errorField.email){
+                        show_validate("#email_add_input","error",result.map.errorField.email);
+                    }
+                    if(undefined != result.map.errorField.empName){
+                        show_validate("#empName_add_input","error",result.map.errorField.empName);
+                    }
+                }
             }
         });
-    })
-
+    });
 
 </script>
 </body>
