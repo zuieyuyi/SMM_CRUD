@@ -29,10 +29,34 @@ public class EmployeeService {
      * 查询所有员工
      */
     public List<Employee> getAll(){
-        return employeeMapper.selectByExampleWithDept(null);
+        EmployeeExample employeeExample = new EmployeeExample();
+        employeeExample.setOrderByClause("emp_id asc");
+        return employeeMapper.selectByExampleWithDept(employeeExample);
     }
 
     public void saveEmp(Employee employee){
         employeeMapper.insertSelective(employee);
+    }
+
+    /**
+     * 通过ID查员工
+     */
+    public Employee getEmp(Integer id) {
+        Employee employee = employeeMapper.selectByPrimaryKey(id);
+        return employee;
+    }
+
+    /**
+     * 更新员工数据
+     */
+    public void updateEmp(Employee employee){
+        employeeMapper.updateByPrimaryKeySelective(employee);
+    }
+
+    /**
+     * 员工删除
+     */
+    public void deleteEmp(Integer id) {
+        employeeMapper.deleteByPrimaryKey(id);
     }
 }

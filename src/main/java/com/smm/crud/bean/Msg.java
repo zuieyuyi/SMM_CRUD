@@ -1,6 +1,6 @@
 package com.smm.crud.bean;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -12,7 +12,7 @@ public class Msg {
     //提示信息
     private String message;
     //用户要返回给浏览器的数据
-    private Map<String,Object> map = new HashMap<>();
+    private Map<String,Object> map = new LinkedHashMap<>();
 
     public static Msg success(){
         Msg result = new Msg();

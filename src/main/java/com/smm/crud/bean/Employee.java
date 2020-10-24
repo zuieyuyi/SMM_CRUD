@@ -2,7 +2,7 @@ package com.smm.crud.bean;
 
 import javax.validation.constraints.Pattern;
 
-public class Employee {
+public class Employee implements Comparable {
     private Integer empId;
 
     @Pattern(regexp = "(^[a-zA-Z0-9_-]{6,16}$)|(^[\\u2E80-\\u9FFF]{2,5})",message = "用户名必须是2-5位中文或者是6-16位字母数字组合")
@@ -83,5 +83,23 @@ public class Employee {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "empId=" + empId +
+                ", empName='" + empName + '\'' +
+                ", gender='" + gender + '\'' +
+                ", email='" + email + '\'' +
+                ", dId=" + dId +
+                ", department=" + department +
+                '}';
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Employee employee = (Employee) o;
+        return this.empId-employee.getEmpId();
     }
 }
