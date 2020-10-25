@@ -158,7 +158,7 @@
         <!-- 列偏移 -->
         <div class="col-md-4 col-md-offset-8">
             <button class="btn btn-primary" id="emp_and_model_btn">新增</button>
-            <button class="btn btn-danger">删除</button>
+            <button class="btn btn-danger" id="emp_delete_all_btn">删除</button>
         </div>
     </div>
     <!-- 显示表格数据 -->
@@ -167,6 +167,9 @@
             <table class="table table-hover" id="emps_table">
                 <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" id="check_all">
+                        </th>
                         <th>#</th>
                         <th>empName</th>
                         <th>gender</th>
@@ -227,6 +230,9 @@
 
         var emps = result.map.pageInfo.list;
         $.each(emps,function(index,item){
+
+            var checkBoxTd = $("<td><input type='checkbox' class='check_item'/></td>");
+
             var empIdTd = $("<td></td>").append(item.empId);
             var empNameTd = $("<td></td>").append(item.empName);
             var genderTd = $("<td></td>").append(item.gender == "M"?"男":"女");
@@ -238,10 +244,12 @@
             editButTd.attr("edit-id",item.empId);
             var delButTd = $("<button></button>").addClass("btn btn-danger btn-sm delete_btn").attr("aria-hidden","true")
                 .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
+            //为删除按钮添加一个自定义的属性来表示当前删除的员工Id
+            delButTd.attr("delete_id",item.empId);
 
             var butsTd = $("<td></td>").append(editButTd).append(" ").append(delButTd);
 
-            $("<tr></tr>").append(empIdTd).append(empNameTd)
+            $("<tr></tr>").append(checkBoxTd).append(empIdTd).append(empNameTd)
                                 .append(genderTd).append(emailTd).append(deptNameTd)
                                 .append(butsTd)
                                 .appendTo("#emps_table tbody");
@@ -503,7 +511,21 @@
     //点击删除按钮
     $(document).on("click",".delete_btn",function(){
         //1、弹出确认删除对话框
-        alert($(this).parents("tr").find("td:eq(1)").text());
+        var empName = $(this).parents("tr").find("td:eq(2)").text();
+        var empId = $(this).attr("delete_id");
+        // alert($(this).parents("tr").find("td:eq(1)").text());
+        if(confirm("确认删除【"+empName+"】吗？")){
+            //确认发送ajax请求删除即可
+            $.ajax({
+                url: "${APP_PATH}/emp/"+empId,
+                type: "DELETE",
+                success: function (result) {
+                    // alert(result.message);
+                    //回到本页
+                    to_page(currentNum);
+                }
+            });
+        }
     });
 
     //从数据库中获取员工对象
@@ -560,6 +582,48 @@
                 to_page(currentNum);
             }
         })
+    });
+    //点击最顶上checkbox下面的checkbox全选
+    $("#check_all").click(function () {
+        //attr获取checked是undefined
+        //我们这些dom原生的属性值；attr获取自定义属性的值
+        //prop修改和读取dom原生属性的值
+        // alert($("this").attr("checked"));
+        // $(this).prop("checked");
+        $(".check_item").prop("checked",$(this).prop("checked"));
+    });
+
+    //点击check_item
+    $(document).on("click",".check_item",function(){
+        //判断当前选择中的元素是否是5个
+        var flag = $(".check_item:checked").length == $(".check_item").length;
+        $("#check_all").prop("checked",flag);
+    });
+
+    //点击全删除批量删除选中数据
+    $("#emp_delete_all_btn").click(function () {
+        var empNames = "";
+        var empIds = "";
+        //遍历选中状态下的多选框
+        $.each($(".check_item:checked"),function(){
+            // alert($(this).parents("tr").find("td:eq(2)").text());
+            empNames += $(this).parents("tr").find("td:eq(2)").text()+",";
+            empIds += $(this).parents("tr").find("td:eq(1)").text()+"-";
+        });
+        //去除多余的符号
+        empNames = empNames.substring(0,empNames.length-1);
+        empIds = empIds.substring(0,empIds.length-1);
+        if (confirm("确认删除【" + empNames + "】吗？")){
+            $.ajax({
+                url: "${APP_PATH}/emp/"+empIds,
+                type: "DELETE",
+                success: function (result) {
+                    alert(result.message);
+                    //回到当前页面
+                    to_page(currentNum);
+                }
+            });
+        }
     });
 </script>
 </body>

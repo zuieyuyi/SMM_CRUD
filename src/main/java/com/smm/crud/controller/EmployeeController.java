@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,23 @@ public class EmployeeController {
     @Autowired
     EmployeeService employeeService;
 
+    /**
+     * 单次批量删除二合一
+     */
     @ResponseBody
-    @RequestMapping(value = "/emp/{Id}",method = RequestMethod.DELETE)
-    public Msg deleteEmpById(@PathVariable("id") Integer id){
-        employeeService.deleteEmp(id);
+    @RequestMapping(value = "/emp/{ids}",method = RequestMethod.DELETE)
+    public Msg deleteEmp(@PathVariable("ids") String ids){
+        //如果带-就表示是批量操作
+        if(ids.contains("-")){
+            List<Integer> idList = new ArrayList<>();
+            String[] strIds = ids.split("-");
+            for (String id:strIds) {
+                idList.add(Integer.parseInt(id));
+            }
+            employeeService.deleteEmpBatch(idList);
+        }else{
+            employeeService.deleteEmp(Integer.parseInt(ids));
+        }
         return Msg.success();
     }
 
